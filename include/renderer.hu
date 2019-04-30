@@ -1,0 +1,8 @@
+#ifndef GRAZE_RENDERER_HU
+#define GRAZE_RENDERER_HU
+
+#include "film.hu"
+
+void render(Film* film);
+
+#endif // GRAZE_RENDERER_HU

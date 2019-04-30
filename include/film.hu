@@ -1,0 +1,38 @@
+#ifndef GRAZE_FILM_HU
+#define GRAZE_FILM_HU
+
+#include <GL/gl3w.h>
+
+#include "gui.hpp"
+
+class Film
+{
+public:
+    struct Surface {
+        float* fb;
+        uint32_t width;
+        uint32_t height;
+    };
+    Film(const FilmSettings& settings);
+    // Needs to happen before window is destroyed
+    void destroy();
+
+    Film(const Film& other) = delete;
+    const Film& operator=(const Film& other) = delete;
+
+    const Surface& surface() const;
+
+    void updateSettings(const FilmSettings& settings);
+    void setDirty();
+    void display(uint32_t w, uint32_t h);
+
+private:
+    void updateTexture();
+
+    GLuint _fbo;
+    GLuint _texture;
+    Surface _surface;
+    bool _dirty;
+};
+
+#endif // GRAZE_FILM_HU
