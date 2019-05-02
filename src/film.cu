@@ -32,7 +32,7 @@ void Film::updateSettings(const FilmSettings& settings)
     _surface.height = settings.height;
 
     checkCudaErrors(cudaFree(_surface.fb));
-    const size_t fbSize = 3 * _surface.width * _surface.height * sizeof(float);
+    const size_t fbSize = 3 * _surface.width * _surface.height * sizeof(Vec3);
     checkCudaErrors(cudaMallocManaged(reinterpret_cast<void**>(&_surface.fb), fbSize));
 
     // Create new texture on gpu

@@ -9,11 +9,13 @@ namespace {
         const int y = blockIdx.y * blockDim.y + threadIdx.y;
         if (x >= surface.width || y >= surface.height)
             return;
-        const int pxI = (y * surface.width + x) * 3;
+        const int pxI = y * surface.width + x;
 
-        surface.fb[pxI] = float(x) / surface.width;
-        surface.fb[pxI + 1] = float(y) / surface.height;
-        surface.fb[pxI + 2] = 0.2;
+        surface.fb[pxI] = Vec3{
+            float(x) / surface.width,
+            float(y) / surface.height,
+            0.2f
+        };
     }
 }
 

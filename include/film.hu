@@ -4,12 +4,13 @@
 #include <GL/gl3w.h>
 
 #include "gui.hpp"
+#include "vec.hu"
 
 class Film
 {
 public:
     struct Surface {
-        float* fb;
+        Vec3* fb;
         uint32_t width;
         uint32_t height;
     };
