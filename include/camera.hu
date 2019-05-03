@@ -5,15 +5,17 @@
 
 class Camera {
 public:
-    Camera(const Vec3& eye, const Vec3& target, const Vec3& up, const float fov, const float ar);
+    Camera(const Vec3& eye, const Vec3& target, const Vec3& up, const float fov, const float ar, const float aperture, const float focusDist);
 
-    __device__ Ray ray(const float s, const float t) const;
+    __device__ Ray ray(const float s, const float t, curandStatePhilox4_32_10_t* randState) const;
 
 private:
     Vec3 _eye;
     Vec3 _lowerLeft;
     Vec3 _horizontal;
     Vec3 _vertical;
+    Vec3 _u, _v, _w;
+    float _lensRadius;
 };
 
 #endif // GRAZE_CAMERA_HU

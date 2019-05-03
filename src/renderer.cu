@@ -50,7 +50,8 @@ namespace {
             const float u = float(x + curand_uniform(&localRand)) / surface.width;
             const float v = float(y + curand_uniform(&localRand)) / surface.height;
 
-            color += trace(cam.ray(u, v), scene, &localRand);
+            const Ray r = cam.ray(u, v, &localRand);
+            color += trace(r, scene, &localRand);
         }
         surface.fb[pxI] = pow(color / surface.samples, 1.f / 2.2f);
     }
@@ -59,12 +60,16 @@ namespace {
 void render(Film* film, Intersectable** scene)
 {
     const auto& surface = film->surface();
+    const Vec3 eye{3.f, 3.f, 2.f};
+    const Vec3 target{0.f, 0.f, -1.f};
     Camera cam{
-        {-2.f, 2.f, 1.f},
-        {0.f, 0.f, -1.f},
-        {0.f, 1.f, 0.f},
+        eye,
+        target,
+        Vec3{0.f, 1.f, 0.f},
         20.f,
-        float(surface.width) / surface.height
+        float(surface.width) / surface.height,
+        2.f,
+        len(target - eye)
     };
 
     const uint32_t tx = 8;
