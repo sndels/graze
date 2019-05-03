@@ -16,7 +16,7 @@ namespace {
         intersectables[0] = new Sphere{
             Vec3{0.f, 0.f, -1.f},
             0.5f,
-            new Lambertian{Vec3{0.8f, 0.3f, 0.3f}}
+            new Lambertian{Vec3{0.1f, 0.2f, 0.5f}}
         };
         intersectables[1] = new Sphere{
             Vec3{0.f, -100.5f, -1.f},
@@ -26,19 +26,24 @@ namespace {
         intersectables[2] = new Sphere{
             Vec3{1.f, 0.f, -1.f},
             0.5f,
-            new Metal{Vec3{0.8f, 0.6f, 0.3f}, 1.f}
+            new Metal{Vec3{0.8f, 0.6f, 0.3f}, 0.3f}
         };
         intersectables[3] = new Sphere{
             Vec3{-1.f, 0.f, -1.f},
             0.5f,
-            new Metal{Vec3{0.8f, 0.8f, 0.8f}, 0.3f}
+            new Dielectric{1.5f}
         };
-        *scene = new IntersectableList(intersectables, 4);
+        intersectables[4] = new Sphere{
+            Vec3{-1.f, 0.f, -1.f},
+            -0.45f, // Flip normal to make hollow sphere
+            new Dielectric{1.5f}
+        };
+        *scene = new IntersectableList(intersectables, 5);
     }
 
     __global__ void free_scene(Intersectable** intersectables, Intersectable** scene)
     {
-        for (int i = 0; i < 4; ++i) {
+        for (int i = 0; i < 5; ++i) {
             // TODO: Not generic if other types are added
             delete reinterpret_cast<Sphere*>(intersectables[i])->material;
             delete intersectables[i];
@@ -60,7 +65,7 @@ int main()
     timer.reset();
     Intersectable** intersectables;
     Intersectable** scene;
-    checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&intersectables), 4 * sizeof(Intersectable*)));
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&intersectables), 5 * sizeof(Intersectable*)));
     checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&scene), sizeof(Intersectable*)));
     init_scene<<<1, 1>>>(intersectables, scene);
     checkCudaErrors(cudaGetLastError());

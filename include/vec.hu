@@ -213,6 +213,17 @@ __host__ __device__ inline Vec3 reflect (const Vec3& v, const Vec3& n)
     return v - 2.f * dot(v, n) * n;
 }
 
+__host__ __device__ inline bool refract(const Vec3& v, const Vec3& n, const float niPerNt, Vec3* refracted)
+{
+    const float dt = dot(v, n);
+    const float d = 1.f - niPerNt * niPerNt * (1.f - dt * dt);
+    if (d > 0.f) {
+        *refracted = niPerNt * (v - n * dt) - n * sqrt(d);
+        return true;
+    }
+    return false;
+}
+
 __host__ __device__ inline Vec3 pow(const Vec3& v, const float e)
 {
     return Vec3{pow(v.x, e), pow(v.y, e), pow(v.z, e)};
