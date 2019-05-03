@@ -1,0 +1,28 @@
+#ifndef GRAZE_HITABLE_HU
+#define GRAZE_HITABLE_HU
+
+#include "ray.hu"
+
+struct Hit {
+    float t;
+    Vec3 p;
+    Vec3 n;
+};
+
+class Intersectable {
+public:
+    __device__ virtual bool intersect(Ray* r, Hit* hit) const = 0;
+};
+
+
+class IntersectableList : public Intersectable {
+public:
+    __device__ IntersectableList(Intersectable** intersectables, const int numIntersectables);
+
+    __device__ virtual bool intersect(Ray* r, Hit* hit) const;
+
+    Intersectable** intersectables;
+    int numIntersectables;
+};
+
+#endif // GRAZE_HITABLE_HU

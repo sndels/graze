@@ -2,7 +2,8 @@
 #define GRAZE_RENDERER_HU
 
 #include "film.hu"
+#include "intersectable.hu"
 
-void render(Film* film);
+void render(Film* film, Intersectable** scene);
 
 #endif // GRAZE_RENDERER_HU

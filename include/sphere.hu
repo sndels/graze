@@ -1,0 +1,17 @@
+#ifndef GRAZE_SPHERE_HU
+#define GRAZE_SPHERE_HU
+
+#include "intersectable.hu"
+
+class Sphere : public Intersectable {
+public:
+    __device__ Sphere(const Vec3& center, const float radius);
+
+    __device__ virtual bool intersect(Ray* r, Hit* hit) const;
+
+private:
+    Vec3 _center;
+    float _radius;
+};
+
+#endif // GRAZE_SPHERE_HU

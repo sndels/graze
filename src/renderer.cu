@@ -1,5 +1,7 @@
 #include "renderer.hu"
 
+#include <cfloat>
+
 #include "cuda_helpers.hu"
 #include "ray.hu"
 
@@ -10,26 +12,17 @@ namespace {
         Vec3 vertical;
     };
 
-    __device__ bool hit_sphere(const Vec3& center, const float radius, const Ray& r)
+    __device__ Vec3 trace(Ray r, Intersectable** scene)
     {
-        Vec3 oc = r.o - center;
-        float a = lenSq(r.d);
-        float b = 2.f * dot(oc, r.d);
-        float c = lenSq(oc) - radius * radius;
-        float discriminant = b * b - 4.f * a * c;
-        return discriminant > 0.f;
-    }
-
-    __device__ Vec3 trace(const Ray& r)
-    {
-        if (hit_sphere(Vec3{0.f, 0.f, -1.f}, 0.5, r))
-            return Vec3{1.f, 0.f, 0.f};
+        Hit hit;
+        if ((*scene)->intersect(&r, &hit))
+            return 0.5f * (hit.n + 1.f);
 
         float t = 0.5f * (r.d.y + 1.0f);
         return (1.f - t) * Vec3{1.f} + t * Vec3{0.5f, 0.7f, 1.f};
     }
 
-    __global__ void cuRender(Film::Surface surface, Camera cam)
+    __global__ void cuRender(Film::Surface surface, Camera cam, Intersectable** scene)
     {
         const int x = blockIdx.x * blockDim.x + threadIdx.x;
         const int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -41,13 +34,15 @@ namespace {
 
         Ray r{
             {0.f, 0.f, 0.f},
-            normalize(cam.lower_left + u * cam.horizontal + v * cam.vertical)
+            normalize(cam.lower_left + u * cam.horizontal + v * cam.vertical),
+            0.f,
+            FLT_MAX
         };
-        surface.fb[pxI] = trace(r);
+        surface.fb[pxI] = trace(r, scene);
     }
 }
 
-void render(Film* film)
+void render(Film* film, Intersectable** scene)
 {
     const auto& surface = film->surface();
     Camera cam{
@@ -64,7 +59,7 @@ void render(Film* film)
     };
     const dim3 threads{tx, ty};
     // This passes a copy of surface but the contained pointer won't be modified, only data
-    cuRender<<<blocks, threads>>>(surface, cam);
+    cuRender<<<blocks, threads>>>(surface, cam, scene);
     checkCudaErrors(cudaGetLastError());
     checkCudaErrors(cudaDeviceSynchronize());
     film->setDirty();
