@@ -1,4 +1,5 @@
 # graze
+![screenshot](screenshot.png)
 
 Implementation of Peter Shirley's series of [minibooks](https://t.co/RHZKjvseIT) in CUDA based on [nv-blog](https://devblogs.nvidia.com/accelerated-ray-tracing-cuda/).
 
