@@ -3,7 +3,7 @@
 
 #include <GL/gl3w.h>
 
-#include "gui.hpp"
+#include "gui.hu"
 #include "vec.hu"
 
 class Film

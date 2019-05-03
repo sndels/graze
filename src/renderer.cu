@@ -57,19 +57,17 @@ namespace {
     }
 }
 
-void render(Film* film, Intersectable** scene)
+void render(const CameraSettings& cameraSettings, Film* film, Intersectable** scene)
 {
     const auto& surface = film->surface();
-    const Vec3 eye{13.f, 2.f, 3.f};
-    const Vec3 target{0.f, 0.f, 0.f};
     Camera cam{
-        eye,
-        target,
+        cameraSettings.eye,
+        cameraSettings.target,
         Vec3{0.f, 1.f, 0.f},
-        20.f,
+        cameraSettings.fov,
         float(surface.width) / surface.height,
-        0.1f,
-        len(target - eye)
+        cameraSettings.aperture,
+        cameraSettings.focalLength
     };
 
     const uint32_t tx = 8;

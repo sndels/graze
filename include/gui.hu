@@ -1,7 +1,9 @@
-#ifndef GRAZE_GUI_HPP
-#define GRAZE_GUI_HPP
+#ifndef GRAZE_GUI_HU
+#define GRAZE_GUI_HU
 
 #include <GLFW/glfw3.h>
+
+#include "vec.hu"
 
 struct FilmSettings
 {
@@ -9,6 +11,15 @@ struct FilmSettings
     uint32_t width = 800;
     uint32_t height = 400;
     uint32_t samples = 100;
+};
+
+struct CameraSettings
+{
+    Vec3 eye = Vec3{13.f, 2.f, 3.f};
+    Vec3 target = Vec3{0.f};
+    float fov = 20.f;
+    float aperture = 0.2f;
+    float focalLength = len(Vec3{13.f, 2.f, 3.f} - Vec3{0.f});
 };
 
 class GUI
@@ -19,6 +30,7 @@ public:
     void destroy();
 
     const FilmSettings& filmSettings() const;
+    const CameraSettings& cameraSettings() const;
     bool startRender() const;
 
     void startFrame();
@@ -26,7 +38,8 @@ public:
 
 private:
     FilmSettings _filmSettings;
+    CameraSettings _cameraSettings;
     bool _startRender = false;
 };
 
-#endif // GRAZE_GUI_HPP
+#endif // GRAZE_GUI_HU

@@ -2,7 +2,7 @@
 
 #include "cuda_helpers.hu"
 #include "film.hu"
-#include "gui.hpp"
+#include "gui.hu"
 #include "material.hu"
 #include "renderer.hu"
 #include "sphere.hu"
@@ -126,7 +126,7 @@ int main()
 
             printf("Initiating render!\n");
             timer.reset();
-            render(&film, scene);
+            render(gui.cameraSettings(), &film, scene);
             printf("Done in %.3fs!\n", timer.seconds());
         }
 

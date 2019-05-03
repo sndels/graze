@@ -2,7 +2,7 @@ set(GRAZE_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/camera.cu
     ${CMAKE_CURRENT_LIST_DIR}/cuda_helpers.cu
     ${CMAKE_CURRENT_LIST_DIR}/film.cu
-    ${CMAKE_CURRENT_LIST_DIR}/gui.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/gui.cu
     ${CMAKE_CURRENT_LIST_DIR}/intersectable.cu
     ${CMAKE_CURRENT_LIST_DIR}/main.cu
     ${CMAKE_CURRENT_LIST_DIR}/material.cu
