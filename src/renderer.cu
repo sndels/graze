@@ -2,17 +2,12 @@
 
 #include <cfloat>
 
+#include "camera.hu"
 #include "cuda_helpers.hu"
 #include "ray.hu"
 #include "material.hu"
 
 namespace {
-    struct Camera {
-        Vec3 lower_left;
-        Vec3 horizontal;
-        Vec3 vertical;
-    };
-
     __device__ Vec3 trace(Ray r, Intersectable** scene, curandStatePhilox4_32_10_t* randState)
     {
         Hit hit;
@@ -55,13 +50,7 @@ namespace {
             const float u = float(x + curand_uniform(&localRand)) / surface.width;
             const float v = float(y + curand_uniform(&localRand)) / surface.height;
 
-            Ray r{
-                {0.f, 0.f, 0.f},
-                normalize(cam.lower_left + u * cam.horizontal + v * cam.vertical),
-                0.f,
-                FLT_MAX
-            };
-            color += trace(r, scene, &localRand);
+            color += trace(cam.ray(u, v), scene, &localRand);
         }
         surface.fb[pxI] = pow(color / surface.samples, 1.f / 2.2f);
     }
@@ -71,9 +60,11 @@ void render(Film* film, Intersectable** scene)
 {
     const auto& surface = film->surface();
     Camera cam{
-        {-2.f, -1.f, -1.f},
-        {4.f, 0.f, 0.f},
-        {0.f, 2.f, 0.f}
+        {-2.f, 2.f, 1.f},
+        {0.f, 0.f, -1.f},
+        {0.f, 1.f, 0.f},
+        20.f,
+        float(surface.width) / surface.height
     };
 
     const uint32_t tx = 8;

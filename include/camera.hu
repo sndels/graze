@@ -1,0 +1,19 @@
+#ifndef GRAZE_CAMERA_HU
+#define GRAZE_CAMERA_HU
+
+#include "ray.hu"
+
+class Camera {
+public:
+    Camera(const Vec3& eye, const Vec3& target, const Vec3& up, const float fov, const float ar);
+
+    __device__ Ray ray(const float s, const float t) const;
+
+private:
+    Vec3 _eye;
+    Vec3 _lowerLeft;
+    Vec3 _horizontal;
+    Vec3 _vertical;
+};
+
+#endif // GRAZE_CAMERA_HU

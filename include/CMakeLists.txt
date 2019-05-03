@@ -4,6 +4,7 @@ set(GRAZE_INCLUDE_DIR
 )
 
 set(GRAZE_INCLUDES
+    ${CMAKE_CURRENT_LIST_DIR}/camera.hu
     ${CMAKE_CURRENT_LIST_DIR}/cuda_helpers.hu
     ${CMAKE_CURRENT_LIST_DIR}/film.hu
     ${CMAKE_CURRENT_LIST_DIR}/gui.hpp
