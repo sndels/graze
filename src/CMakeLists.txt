@@ -4,6 +4,7 @@ set(GRAZE_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/gui.cpp
     ${CMAKE_CURRENT_LIST_DIR}/intersectable.cu
     ${CMAKE_CURRENT_LIST_DIR}/main.cu
+    ${CMAKE_CURRENT_LIST_DIR}/material.cu
     ${CMAKE_CURRENT_LIST_DIR}/ray.cu
     ${CMAKE_CURRENT_LIST_DIR}/renderer.cu
     ${CMAKE_CURRENT_LIST_DIR}/sphere.cu

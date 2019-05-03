@@ -1,0 +1,31 @@
+#ifndef GRAZE_MATERIAL_HU
+#define GRAZE_MATERIAL_HU
+
+#include "intersectable.hu"
+#include "ray.hu"
+
+class Material {
+public:
+    __device__ virtual bool scatter(const Ray& r, const Hit& hit, Vec3* attenuation, Ray* scattered, curandStatePhilox4_32_10_t* randState) const = 0;
+};
+
+class Lambertian : public Material {
+public:
+    __device__ Lambertian(const Vec3& albedo);
+
+    __device__ virtual bool scatter(const Ray& r, const Hit& hit, Vec3* attenuation, Ray* scattered, curandStatePhilox4_32_10_t* randState) const;
+
+    Vec3 albedo;
+};
+
+class Metal : public Material {
+public:
+    __device__ Metal(const Vec3& albedo, const float roughness);
+
+    __device__ virtual bool scatter(const Ray& r, const Hit& hit, Vec3* attenuation, Ray* scattered, curandStatePhilox4_32_10_t* randState) const;
+
+    Vec3 albedo;
+    float roughness;
+};
+
+#endif // GRAZE_MATERIAL_HU

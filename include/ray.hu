@@ -9,6 +9,7 @@ struct Ray {
     float t_min;
     float t_max;
 
+    __device__ Ray();
     __device__ Ray(const Vec3& o, const Vec3& d, const float t_min, const float t_max);
     __device__ Vec3 point(const float t) const;
 };

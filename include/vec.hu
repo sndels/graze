@@ -208,6 +208,11 @@ __host__ __device__ inline Vec3 normalize(const Vec3& v)
     return v / len(v);
 }
 
+__host__ __device__ inline Vec3 reflect (const Vec3& v, const Vec3& n)
+{
+    return v - 2.f * dot(v, n) * n;
+}
+
 __host__ __device__ inline Vec3 pow(const Vec3& v, const float e)
 {
     return Vec3{pow(v.x, e), pow(v.y, e), pow(v.z, e)};

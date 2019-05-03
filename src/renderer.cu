@@ -4,6 +4,7 @@
 
 #include "cuda_helpers.hu"
 #include "ray.hu"
+#include "material.hu"
 
 namespace {
     struct Camera {
@@ -14,17 +15,19 @@ namespace {
 
     __device__ Vec3 trace(Ray r, Intersectable** scene, curandStatePhilox4_32_10_t* randState)
     {
-        float atten = 1.f;
         Hit hit;
+        Vec3 atten{1.f};
         for (int bounce = 0; bounce < 50; ++bounce) {
             if ((*scene)->intersect(&r, &hit)) {
-                r = Ray{
-                    hit.p,
-                    normalize(hit.n + randomDir(randState)),
-                    0.001f,
-                    FLT_MAX
-                };
-                atten *= 0.5f;
+                Ray scattered;
+                Vec3 attenuation;
+                if (hit.material->scatter(r, hit, &attenuation, &scattered, randState)) {
+                    atten *= attenuation;
+                    r = scattered;
+                } else {
+                    atten = Vec3{0.f};
+                    break;
+                }
             } else
                 break;
         }

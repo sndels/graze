@@ -3,6 +3,7 @@
 #include "cuda_helpers.hu"
 #include "film.hu"
 #include "gui.hpp"
+#include "material.hu"
 #include "renderer.hu"
 #include "sphere.hu"
 #include "timer.hpp"
@@ -12,15 +13,36 @@ namespace {
     // Init on gpu to use abstract base class
     __global__ void init_scene(Intersectable** intersectables, Intersectable** scene)
     {
-        intersectables[0] = new Sphere{Vec3{0.f, 0.f, -1.f}, 0.5f};
-        intersectables[1] = new Sphere{Vec3{0.f, -100.5f, -1.f}, 100.f};
-        *scene = new IntersectableList(intersectables, 2);
+        intersectables[0] = new Sphere{
+            Vec3{0.f, 0.f, -1.f},
+            0.5f,
+            new Lambertian{Vec3{0.8f, 0.3f, 0.3f}}
+        };
+        intersectables[1] = new Sphere{
+            Vec3{0.f, -100.5f, -1.f},
+            100.f,
+            new Lambertian{Vec3{0.8f, 0.8f, 0.f}}
+        };
+        intersectables[2] = new Sphere{
+            Vec3{1.f, 0.f, -1.f},
+            0.5f,
+            new Metal{Vec3{0.8f, 0.6f, 0.3f}, 1.f}
+        };
+        intersectables[3] = new Sphere{
+            Vec3{-1.f, 0.f, -1.f},
+            0.5f,
+            new Metal{Vec3{0.8f, 0.8f, 0.8f}, 0.3f}
+        };
+        *scene = new IntersectableList(intersectables, 4);
     }
 
     __global__ void free_scene(Intersectable** intersectables, Intersectable** scene)
     {
-        delete intersectables[0];
-        delete intersectables[1];
+        for (int i = 0; i < 4; ++i) {
+            // TODO: Not generic if other types are added
+            delete reinterpret_cast<Sphere*>(intersectables[i])->material;
+            delete intersectables[i];
+        }
         delete *scene;
     }
 }
@@ -38,7 +60,7 @@ int main()
     timer.reset();
     Intersectable** intersectables;
     Intersectable** scene;
-    checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&intersectables), 2 * sizeof(Intersectable*)));
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&intersectables), 4 * sizeof(Intersectable*)));
     checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&scene), sizeof(Intersectable*)));
     init_scene<<<1, 1>>>(intersectables, scene);
     checkCudaErrors(cudaGetLastError());
