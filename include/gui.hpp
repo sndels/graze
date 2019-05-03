@@ -6,8 +6,8 @@
 struct FilmSettings
 {
     // These need to be back-to-back as they are written to as int[2]
-    uint32_t width = 1280;
-    uint32_t height = 720;
+    uint32_t width = 800;
+    uint32_t height = 400;
 };
 
 class GUI
