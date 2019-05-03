@@ -1,6 +1,8 @@
 #ifndef GRAZE_VEC_HU
 #define GRAZE_VEC_HU
 
+#include <curand_kernel.h>
+
 struct Vec3 {
     // Alias both xyz and rgb components
     union { float x, r; };
@@ -204,6 +206,24 @@ __host__ __device__ inline float len(const Vec3& v)
 __host__ __device__ inline Vec3 normalize(const Vec3& v)
 {
     return v / len(v);
+}
+
+__host__ __device__ inline Vec3 pow(const Vec3& v, const float e)
+{
+    return Vec3{pow(v.x, e), pow(v.y, e), pow(v.z, e)};
+}
+
+__device__ inline Vec3 randomDir(curandStatePhilox4_32_10_t* randState)
+{
+    Vec3 v;
+    do {
+        v = Vec3{
+                curand_uniform(randState),
+                curand_uniform(randState),
+                curand_uniform(randState)
+            } * 2.f - 1.f;
+    } while (len(v) > 1.f);
+    return v;
 }
 
 #endif // GRAZE_VEC_HU

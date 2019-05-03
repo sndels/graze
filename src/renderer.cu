@@ -2,8 +2,6 @@
 
 #include <cfloat>
 
-#include <curand_kernel.h>
-
 #include "cuda_helpers.hu"
 #include "ray.hu"
 
@@ -14,14 +12,26 @@ namespace {
         Vec3 vertical;
     };
 
-    __device__ Vec3 trace(Ray r, Intersectable** scene)
+    __device__ Vec3 trace(Ray r, Intersectable** scene, curandStatePhilox4_32_10_t* randState)
     {
+        float atten = 1.f;
         Hit hit;
-        if ((*scene)->intersect(&r, &hit))
-            return 0.5f * (hit.n + 1.f);
+        for (int bounce = 0; bounce < 50; ++bounce) {
+            if ((*scene)->intersect(&r, &hit)) {
+                r = Ray{
+                    hit.p,
+                    normalize(hit.n + randomDir(randState)),
+                    0.001f,
+                    FLT_MAX
+                };
+                atten *= 0.5f;
+            } else
+                break;
+        }
 
         float t = 0.5f * (r.d.y + 1.0f);
-        return (1.f - t) * Vec3{1.f} + t * Vec3{0.5f, 0.7f, 1.f};
+        Vec3 color = (1.f - t) * Vec3{1.f} + t * Vec3{0.5f, 0.7f, 1.f};
+        return atten * color;
     }
 
     __global__ void cuRender(Film::Surface surface, Camera cam, Intersectable** scene)
@@ -48,9 +58,9 @@ namespace {
                 0.f,
                 FLT_MAX
             };
-            color += trace(r, scene);
+            color += trace(r, scene, &localRand);
         }
-        surface.fb[pxI] = color / surface.samples;
+        surface.fb[pxI] = pow(color / surface.samples, 1.f / 2.2f);
     }
 }
 
