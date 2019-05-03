@@ -55,9 +55,9 @@ void GUI::startFrame()
 
     if (ImGui::CollapsingHeader("Film", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::PushItemWidth(float2InputWidth);
-        // Use hex characters to enforce unsigned input
         // FilmSettings has width and height back-to-back
-        ImGui::InputInt2("resolution", (int*)&_filmSettings.width, ImGuiInputTextFlags_CharsHexadecimal);
+        ImGui::InputScalarN("resolution", ImGuiDataType_U32, &_filmSettings.width, 2);
+        ImGui::InputScalar("samples", ImGuiDataType_U32, &_filmSettings.samples);
         ImGui::PopItemWidth();
     }
 

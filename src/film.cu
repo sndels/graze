@@ -30,6 +30,7 @@ void Film::updateSettings(const FilmSettings& settings)
 {
     _surface.width = settings.width;
     _surface.height = settings.height;
+    _surface.samples = settings.samples;
 
     checkCudaErrors(cudaFree(_surface.fb));
     const size_t fbSize = 3 * _surface.width * _surface.height * sizeof(Vec3);

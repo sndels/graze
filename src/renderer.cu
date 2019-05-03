@@ -2,6 +2,8 @@
 
 #include <cfloat>
 
+#include <curand_kernel.h>
+
 #include "cuda_helpers.hu"
 #include "ray.hu"
 
@@ -29,16 +31,26 @@ namespace {
         if (x >= surface.width || y >= surface.height)
             return;
         const int pxI = y * surface.width + x;
-        const float u = float(x) / surface.width;
-        const float v = float(y) / surface.height;
 
-        Ray r{
-            {0.f, 0.f, 0.f},
-            normalize(cam.lower_left + u * cam.horizontal + v * cam.vertical),
-            0.f,
-            FLT_MAX
-        };
-        surface.fb[pxI] = trace(r, scene);
+        // Use Philox because XORWOW init is slow and threw error 700 with large sequences
+        // Suggested in https://devtalk.nvidia.com/default/topic/1028057/curand_init-sequence-number-problem/
+        curandStatePhilox4_32_10_t localRand;
+        curand_init(1337, pxI, 0, &localRand);
+
+        Vec3 color;
+        for (int s = 0; s < surface.samples; ++s) {
+            const float u = float(x + curand_uniform(&localRand)) / surface.width;
+            const float v = float(y + curand_uniform(&localRand)) / surface.height;
+
+            Ray r{
+                {0.f, 0.f, 0.f},
+                normalize(cam.lower_left + u * cam.horizontal + v * cam.vertical),
+                0.f,
+                FLT_MAX
+            };
+            color += trace(r, scene);
+        }
+        surface.fb[pxI] = color / surface.samples;
     }
 }
 
