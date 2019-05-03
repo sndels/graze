@@ -60,15 +60,15 @@ namespace {
 void render(Film* film, Intersectable** scene)
 {
     const auto& surface = film->surface();
-    const Vec3 eye{3.f, 3.f, 2.f};
-    const Vec3 target{0.f, 0.f, -1.f};
+    const Vec3 eye{13.f, 2.f, 3.f};
+    const Vec3 target{0.f, 0.f, 0.f};
     Camera cam{
         eye,
         target,
         Vec3{0.f, 1.f, 0.f},
         20.f,
         float(surface.width) / surface.height,
-        2.f,
+        0.1f,
         len(target - eye)
     };
 

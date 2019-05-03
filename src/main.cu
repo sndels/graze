@@ -10,40 +10,80 @@
 #include "window.hpp"
 
 namespace {
+    // This a loose upper bound
+    const uint32_t numSpheres = 500;
+
     // Init on gpu to use abstract base class
     __global__ void init_scene(Intersectable** intersectables, Intersectable** scene)
     {
         intersectables[0] = new Sphere{
-            Vec3{0.f, 0.f, -1.f},
-            0.5f,
-            new Lambertian{Vec3{0.1f, 0.2f, 0.5f}}
+            Vec3{0.f, -1000.f, 0.f},
+            1000.f,
+            new Lambertian{Vec3{0.5f, 0.5f, 0.5f}}
         };
-        intersectables[1] = new Sphere{
-            Vec3{0.f, -100.5f, -1.f},
-            100.f,
-            new Lambertian{Vec3{0.8f, 0.8f, 0.f}}
-        };
-        intersectables[2] = new Sphere{
-            Vec3{1.f, 0.f, -1.f},
-            0.5f,
-            new Metal{Vec3{0.8f, 0.6f, 0.3f}, 0.3f}
-        };
-        intersectables[3] = new Sphere{
-            Vec3{-1.f, 0.f, -1.f},
-            0.5f,
+
+        int i = 1;
+        curandState randState;
+        curand_init(1337, 0, 0, &randState);
+        for (int a = -11; a < 11; ++a) {
+            for (int b = -11; b < 11; ++b) {
+                float chooseMat = curand_uniform(&randState);
+                const Vec3 center{
+                    a + 0.9f * curand_uniform(&randState),
+                    0.2f,
+                    b + 0.9f * curand_uniform(&randState)
+                };
+                if (len(center - Vec3{4.f, 0.2f, 0.f}) > 0.9f) {
+                    intersectables[i] = new Sphere{
+                        center,
+                        0.2f,
+                        nullptr
+                    };
+                    if (chooseMat < 0.8f) {
+                        reinterpret_cast<Sphere*>(intersectables[i++])->material = new Lambertian{
+                            Vec3{
+                                curand_uniform(&randState) * curand_uniform(&randState),
+                                curand_uniform(&randState) * curand_uniform(&randState),
+                                curand_uniform(&randState) * curand_uniform(&randState)
+                            }
+                        };
+                    } else if (chooseMat < 0.95f) {
+                        reinterpret_cast<Sphere*>(intersectables[i++])->material = new Metal{
+                            0.5f * (1.f - Vec3{
+                                curand_uniform(&randState),
+                                curand_uniform(&randState),
+                                curand_uniform(&randState)
+                            }),
+                            0.5f * curand_uniform(&randState)
+                        };
+                    } else
+                        reinterpret_cast<Sphere*>(intersectables[i++])->material = new Dielectric{1.5f};
+                }
+            }
+        }
+
+        intersectables[i++] = new Sphere{
+            Vec3{0.f, 1.f, 0.f},
+            1.f,
             new Dielectric{1.5f}
         };
-        intersectables[4] = new Sphere{
-            Vec3{-1.f, 0.f, -1.f},
-            -0.45f, // Flip normal to make hollow sphere
-            new Dielectric{1.5f}
+        intersectables[i++] = new Sphere{
+            Vec3{-4.f, 1.f, 0.f},
+            1.f,
+            new Lambertian{Vec3{0.4f, 0.2f, 0.1f}}
         };
-        *scene = new IntersectableList(intersectables, 5);
+        intersectables[i++] = new Sphere{
+            Vec3{4.f, 1.f, 0.f},
+            1.f,
+            new Metal{Vec3{0.7f, 0.6f, 0.5f}, 0.f}
+        };
+
+        *scene = new IntersectableList(intersectables, i);
     }
 
     __global__ void free_scene(Intersectable** intersectables, Intersectable** scene)
     {
-        for (int i = 0; i < 5; ++i) {
+        for (int i = 0; i < reinterpret_cast<IntersectableList*>(*scene)->numIntersectables; ++i) {
             // TODO: Not generic if other types are added
             delete reinterpret_cast<Sphere*>(intersectables[i])->material;
             delete intersectables[i];
@@ -65,7 +105,7 @@ int main()
     timer.reset();
     Intersectable** intersectables;
     Intersectable** scene;
-    checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&intersectables), 5 * sizeof(Intersectable*)));
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&intersectables), (numSpheres + 1) * sizeof(Intersectable*)));
     checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&scene), sizeof(Intersectable*)));
     init_scene<<<1, 1>>>(intersectables, scene);
     checkCudaErrors(cudaGetLastError());
