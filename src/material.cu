@@ -34,6 +34,7 @@ __device__ Metal::Metal(const Vec3& albedo, const float roughness) :
 
 __device__ bool Metal::scatter(const Ray& r, const Hit& hit, Vec3* attenuation, Ray* scattered, curandStatePhilox4_32_10_t* randState) const
 {
+    // TODO: Less hacky rough reflections
     *scattered = Ray{
         hit.p,
         normalize(reflect(r.d, hit.n) + _roughness * randomDir(randState)),
@@ -41,6 +42,7 @@ __device__ bool Metal::scatter(const Ray& r, const Hit& hit, Vec3* attenuation, 
         FLT_MAX
     };
     *attenuation = _albedo;
+    // Don't scatter on rays falling under "horizon"
     return dot(scattered->d, hit.n) > 0;
 }
 

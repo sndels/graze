@@ -45,11 +45,12 @@ namespace {
                         };
                     } else if (chooseMat < 0.95f) {
                         materials[i] = new Metal{
-                            0.5f * (1.f - Vec3{
-                                curand_uniform(&randState),
-                                curand_uniform(&randState),
-                                curand_uniform(&randState)
-                            }),
+                            0.5f * (1.f -
+                                    Vec3{
+                                        curand_uniform(&randState),
+                                        curand_uniform(&randState),
+                                        curand_uniform(&randState)
+                                    }),
                             0.5f * curand_uniform(&randState)
                         };
                     } else
@@ -108,16 +109,18 @@ int main()
     Timer timer;
 
     timer.reset();
+    printf("Building scene!\n");
     Material** materials;
     Intersectable** intersectables;
     Intersectable** scene;
     checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&materials), (numSpheres + 1) * sizeof(Material*)));
     checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&intersectables), (numSpheres + 1) * sizeof(Intersectable*)));
     checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&scene), sizeof(Intersectable*)));
+    // Scene needs to be initialized on GPU since it uses abstract classes
     init_scene<<<1, 1>>>(materials, intersectables, scene);
     checkCudaErrors(cudaGetLastError());
     checkCudaErrors(cudaDeviceSynchronize());
-    printf("Scene built in %.3fs!\n", timer.seconds());
+    printf("Done in %.3fs!\n", timer.seconds());
 
 
     // Run the main loop
@@ -128,7 +131,7 @@ int main()
         // Prepare GL
         glClear(GL_COLOR_BUFFER_BIT);
 
-        if (window.startRender() || gui.startRender()) {
+        if (window.shouldRender() || gui.shouldRender()) {
             film.updateSettings(gui.filmSettings());
 
             printf("Initiating render!\n");
@@ -143,11 +146,13 @@ int main()
     }
 
     checkCudaErrors(cudaDeviceSynchronize());
+    // Scene needs to be freed up on GPU as it was initialized there
     free_scene<<<1, 1>>>(materials, intersectables, scene);
     checkCudaErrors(cudaGetLastError());
     checkCudaErrors(cudaFree(materials));
     checkCudaErrors(cudaFree(intersectables));
     checkCudaErrors(cudaFree(scene));
+
     film.destroy();
     gui.destroy();
     window.destroy();

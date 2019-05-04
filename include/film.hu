@@ -15,6 +15,7 @@ public:
         uint32_t height;
         uint32_t samples;
     };
+
     Film(const FilmSettings& settings);
     // Needs to happen before window is destroyed
     void destroy();
@@ -25,7 +26,9 @@ public:
     const Surface& surface() const;
 
     void updateSettings(const FilmSettings& settings);
+    // Results in texture being updated on next display
     void setDirty();
+    // Blits texture expecting viewport size w,h
     void display(uint32_t w, uint32_t h);
 
 private:

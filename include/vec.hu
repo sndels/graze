@@ -16,16 +16,16 @@ struct Vec3 {
         z = 0.f;
     }
 
-    __host__ __device__ Vec3(float t) :
-        x(t),
-        y(t),
-        z(t)
+    __host__ __device__ Vec3(const float t) :
+        x{t},
+        y{t},
+        z{t}
     { }
 
-    __host__ __device__ Vec3(float x, float y, float z) :
-        x(x),
-        y(y),
-        z(z)
+    __host__ __device__ Vec3(const float x, const float y, const float z) :
+        x{x},
+        y{y},
+        z{z}
     { }
 
     __host__ __device__ const Vec3& operator+();

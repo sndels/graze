@@ -1,7 +1,7 @@
 #include "timer.hpp"
 
 Timer::Timer() :
-    _start(std::chrono::system_clock::now())
+    _start{std::chrono::system_clock::now()}
 { }
 
 void Timer::reset()

@@ -7,13 +7,15 @@ class Material;
 
 class Sphere : public Intersectable {
 public:
+    // Caller is responsible of material
     __device__ Sphere(const Vec3& center, const float radius, Material* material);
 
     __device__ virtual bool intersect(Ray* r, Hit* hit) const;
 
-    Vec3 center;
-    float radius;
-    Material* material;
+private:
+    Vec3 _center;
+    float _radius;
+    Material* _material;
 };
 
 #endif // GRAZE_SPHERE_HU

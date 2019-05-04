@@ -6,9 +6,9 @@
 #include <stdio.h>
 
 Window::Window(uint32_t w, uint32_t h) :
-    _w(w),
-    _h(h),
-    _startRender(false)
+    _w{w},
+    _h{h},
+    _shouldRender{false}
 { }
 
 bool Window::init() {
@@ -85,14 +85,14 @@ uint32_t Window::height() const
     return _h;
 }
 
-bool Window::startRender() const
+bool Window::shouldRender() const
 {
-    return _startRender;
+    return _shouldRender;
 }
 
 void Window::startFrame()
 {
-    _startRender = false;
+    _shouldRender = false;
     glfwPollEvents();
 }
 
@@ -149,7 +149,7 @@ void Window::keyCallback(GLFWwindow* window, int32_t key, int32_t scancode, int3
                 glfwSetWindowShouldClose(window, GLFW_TRUE);
                 break;
             case GLFW_KEY_ENTER:
-                thisPtr->_startRender = true;
+                thisPtr->_shouldRender = true;
                 break;
             default: break;
             }

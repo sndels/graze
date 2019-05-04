@@ -6,12 +6,27 @@
 struct Ray {
     Vec3 o;
     Vec3 d;
-    float t_min;
-    float t_max;
+    float tMin;
+    float tMax;
 
-    __device__ Ray();
-    __device__ Ray(const Vec3& o, const Vec3& d, const float t_min, const float t_max);
-    __device__ Vec3 point(const float t) const;
+    __device__ Ray() :
+        o{0.f},
+        d{0.f},
+        tMin{0.f},
+        tMax{0.f}
+    { }
+
+    __device__ Ray(const Vec3& o, const Vec3& d, const float tMin, const float tMax) :
+        o{o},
+        d{d},
+        tMin{tMin},
+        tMax{tMax}
+    { }
+
+    __device__ Vec3 point(const float t) const
+    {
+        return o + t * d;
+    }
 };
 
 #endif // GRAZE_RAY_HU

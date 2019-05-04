@@ -42,9 +42,9 @@ const CameraSettings& GUI::cameraSettings() const
     return _cameraSettings;
 }
 
-bool GUI::startRender() const
+bool GUI::shouldRender() const
 {
-    return _startRender;
+    return _shouldRender;
 }
 
 void GUI::startFrame()
@@ -78,7 +78,7 @@ void GUI::startFrame()
     }
 
     ImGui::Spacing();
-    _startRender = ImGui::Button("Render"); ImGui::SameLine();
+    _shouldRender = ImGui::Button("Render"); ImGui::SameLine();
     ImGui::End();
 }
 

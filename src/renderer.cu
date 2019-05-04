@@ -8,10 +8,11 @@
 #include "material.hu"
 
 namespace {
-    __device__ Vec3 trace(Ray r, Intersectable** scene, curandStatePhilox4_32_10_t* randState)
+    __device__ Vec3 trace(const Ray& startRay, const Intersectable* const* scene, curandStatePhilox4_32_10_t* randState)
     {
         Hit hit;
         Vec3 atten{1.f};
+        Ray r = startRay;
         for (int bounce = 0; bounce < 50; ++bounce) {
             if ((*scene)->intersect(&r, &hit)) {
                 Ray scattered;
@@ -27,12 +28,14 @@ namespace {
                 break;
         }
 
+        // Light from sky
         float t = 0.5f * (r.d.y + 1.0f);
         Vec3 color = (1.f - t) * Vec3{1.f} + t * Vec3{0.5f, 0.7f, 1.f};
         return atten * color;
     }
 
-    __global__ void cuRender(Film::Surface surface, Camera cam, Intersectable** scene)
+    // Pass surface by value (copy) since only contents of fb are modified
+    __global__ void cuRender(const Film::Surface surface, Camera cam, const Intersectable* const* scene)
     {
         const int x = blockIdx.x * blockDim.x + threadIdx.x;
         const int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -47,6 +50,7 @@ namespace {
 
         Vec3 color;
         for (int s = 0; s < surface.samples; ++s) {
+            // Simple jitter on pixel location
             const float u = float(x + curand_uniform(&localRand)) / surface.width;
             const float v = float(y + curand_uniform(&localRand)) / surface.height;
 
@@ -57,10 +61,10 @@ namespace {
     }
 }
 
-void render(const CameraSettings& cameraSettings, Film* film, Intersectable** scene)
+void render(const CameraSettings& cameraSettings, Film* film, const Intersectable* const* scene)
 {
     const auto& surface = film->surface();
-    Camera cam{
+    const Camera cam{
         cameraSettings.eye,
         cameraSettings.target,
         Vec3{0.f, 1.f, 0.f},
@@ -70,16 +74,14 @@ void render(const CameraSettings& cameraSettings, Film* film, Intersectable** sc
         cameraSettings.focalLength
     };
 
-    const uint32_t tx = 8;
-    const uint32_t ty = 8;
+    const dim3 threads{8, 8};
     const dim3 blocks{
-        surface.width / tx + 1,
-        surface.height / ty + 1
+        surface.width / threads.x + 1,
+        surface.height / threads.y + 1
     };
-    const dim3 threads{tx, ty};
-    // This passes a copy of surface but the contained pointer won't be modified, only data
     cuRender<<<blocks, threads>>>(surface, cam, scene);
     checkCudaErrors(cudaGetLastError());
     checkCudaErrors(cudaDeviceSynchronize());
+
     film->setDirty();
 }

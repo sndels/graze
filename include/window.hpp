@@ -19,7 +19,7 @@ public:
     GLFWwindow* ptr() const;
     uint32_t width() const;
     uint32_t height() const;
-    bool startRender() const;
+    bool shouldRender() const;
 
     void startFrame();
     void endFrame() const;
@@ -35,7 +35,7 @@ public:
 private:
     GLFWwindow* _window;
     uint32_t _w, _h;
-    bool _startRender;
+    bool _shouldRender;
 };
 
 #endif // GRAZE_WINDOW_HPP

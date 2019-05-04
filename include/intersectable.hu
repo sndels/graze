@@ -9,7 +9,7 @@ struct Hit {
     float t;
     Vec3 p;
     Vec3 n;
-    Material* material;
+    const Material* material;
 };
 
 class Intersectable {

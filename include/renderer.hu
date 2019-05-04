@@ -4,6 +4,6 @@
 #include "film.hu"
 #include "intersectable.hu"
 
-void render(const CameraSettings& cameraSettings, Film* film, Intersectable** scene);
+void render(const CameraSettings& cameraSettings, Film* film, const Intersectable* const* scene);
 
 #endif // GRAZE_RENDERER_HU

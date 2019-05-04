@@ -3,8 +3,8 @@
 #include "cuda_helpers.hu"
 
 Film::Film(const FilmSettings& settings) :
-    _dirty(false),
-    _surface({nullptr, 0, 0}) // updateSettings frees fb and it's nop on nullptr
+    _dirty{false},
+    _surface{nullptr, 0, 0} // updateSettings frees fb and it's nop on nullptr
 {
     // Generate and bind texture for blitting
     glGenFramebuffers(1 , &_fbo);

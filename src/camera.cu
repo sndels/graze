@@ -3,9 +3,10 @@
 #include <cfloat>
 
 Camera::Camera(const Vec3& eye, const Vec3& target, const Vec3& up, const float fov, const float ar, const float aperture, const float focusDist) :
-    _eye(eye),
-    _lensRadius(aperture / 2.f)
+    _eye{eye},
+    _lensRadius{aperture / 2.f}
 {
+    // TODO: comment
     const float theta = fov * M_PI / 180.f;
     const float halfHeight = tan(theta / 2.f);
     const float halfWidth = ar * halfHeight;
@@ -19,6 +20,7 @@ Camera::Camera(const Vec3& eye, const Vec3& target, const Vec3& up, const float 
 
 __device__ Ray Camera::ray(const float s, const float t, curandStatePhilox4_32_10_t* randState) const
 {
+    // TODO: comment
     const Vec3 d = _lensRadius * randomDir(randState);
     const Vec3 offset = _u * d.x + _v * d.y;
     return Ray{

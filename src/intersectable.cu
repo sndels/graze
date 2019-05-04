@@ -1,8 +1,8 @@
 #include "intersectable.hu"
 
 __device__ IntersectableList::IntersectableList(Intersectable** intersectables, const int numIntersectables) :
-    intersectables(intersectables),
-    numIntersectables(numIntersectables)
+    intersectables{intersectables},
+    numIntersectables{numIntersectables}
 { }
 
 __device__ bool IntersectableList::intersect(Ray* r, Hit* hit) const
