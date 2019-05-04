@@ -14,12 +14,13 @@ namespace {
     const uint32_t numSpheres = 500;
 
     // Init on gpu to use abstract base class
-    __global__ void init_scene(Intersectable** intersectables, Intersectable** scene)
+    __global__ void init_scene(Material** materials, Intersectable** intersectables, Intersectable** scene)
     {
+        materials[0] = new Lambertian{Vec3{0.5f, 0.5f, 0.5f}};
         intersectables[0] = new Sphere{
             Vec3{0.f, -1000.f, 0.f},
             1000.f,
-            new Lambertian{Vec3{0.5f, 0.5f, 0.5f}}
+            materials[0]
         };
 
         int i = 1;
@@ -27,20 +28,15 @@ namespace {
         curand_init(1337, 0, 0, &randState);
         for (int a = -11; a < 11; ++a) {
             for (int b = -11; b < 11; ++b) {
-                float chooseMat = curand_uniform(&randState);
                 const Vec3 center{
                     a + 0.9f * curand_uniform(&randState),
                     0.2f,
                     b + 0.9f * curand_uniform(&randState)
                 };
                 if (len(center - Vec3{4.f, 0.2f, 0.f}) > 0.9f) {
-                    intersectables[i] = new Sphere{
-                        center,
-                        0.2f,
-                        nullptr
-                    };
+                    const float chooseMat = curand_uniform(&randState);
                     if (chooseMat < 0.8f) {
-                        reinterpret_cast<Sphere*>(intersectables[i++])->material = new Lambertian{
+                        materials[i] = new Lambertian{
                             Vec3{
                                 curand_uniform(&randState) * curand_uniform(&randState),
                                 curand_uniform(&randState) * curand_uniform(&randState),
@@ -48,7 +44,7 @@ namespace {
                             }
                         };
                     } else if (chooseMat < 0.95f) {
-                        reinterpret_cast<Sphere*>(intersectables[i++])->material = new Metal{
+                        materials[i] = new Metal{
                             0.5f * (1.f - Vec3{
                                 curand_uniform(&randState),
                                 curand_uniform(&randState),
@@ -57,35 +53,44 @@ namespace {
                             0.5f * curand_uniform(&randState)
                         };
                     } else
-                        reinterpret_cast<Sphere*>(intersectables[i++])->material = new Dielectric{1.5f};
+                        materials[i] = new Dielectric{1.5f};
+
+                    intersectables[i] = new Sphere{
+                        center,
+                        0.2f,
+                        materials[i]
+                    };
+                    ++i;
                 }
             }
         }
 
-        intersectables[i++] = new Sphere{
+        materials[i] = new Dielectric{1.5f};
+        intersectables[i] = new Sphere{
             Vec3{0.f, 1.f, 0.f},
             1.f,
-            new Dielectric{1.5f}
+            materials[i]
         };
-        intersectables[i++] = new Sphere{
+        materials[++i] = new Lambertian{Vec3{0.4f, 0.2f, 0.1f}};
+        intersectables[i] = new Sphere{
             Vec3{-4.f, 1.f, 0.f},
             1.f,
-            new Lambertian{Vec3{0.4f, 0.2f, 0.1f}}
+            materials[i]
         };
-        intersectables[i++] = new Sphere{
+        materials[++i] = new Metal{Vec3{0.7f, 0.6f, 0.5f}, 0.f};
+        intersectables[i] = new Sphere{
             Vec3{4.f, 1.f, 0.f},
             1.f,
-            new Metal{Vec3{0.7f, 0.6f, 0.5f}, 0.f}
+            materials[i]
         };
 
-        *scene = new IntersectableList(intersectables, i);
+        *scene = new IntersectableList(intersectables, ++i);
     }
 
-    __global__ void free_scene(Intersectable** intersectables, Intersectable** scene)
+    __global__ void free_scene(Material** materials, Intersectable** intersectables, Intersectable** scene)
     {
         for (int i = 0; i < reinterpret_cast<IntersectableList*>(*scene)->numIntersectables; ++i) {
-            // TODO: Not generic if other types are added
-            delete reinterpret_cast<Sphere*>(intersectables[i])->material;
+            delete materials[i];
             delete intersectables[i];
         }
         delete *scene;
@@ -103,11 +108,13 @@ int main()
     Timer timer;
 
     timer.reset();
+    Material** materials;
     Intersectable** intersectables;
     Intersectable** scene;
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&materials), (numSpheres + 1) * sizeof(Material*)));
     checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&intersectables), (numSpheres + 1) * sizeof(Intersectable*)));
     checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&scene), sizeof(Intersectable*)));
-    init_scene<<<1, 1>>>(intersectables, scene);
+    init_scene<<<1, 1>>>(materials, intersectables, scene);
     checkCudaErrors(cudaGetLastError());
     checkCudaErrors(cudaDeviceSynchronize());
     printf("Scene built in %.3fs!\n", timer.seconds());
@@ -136,8 +143,9 @@ int main()
     }
 
     checkCudaErrors(cudaDeviceSynchronize());
-    free_scene<<<1, 1>>>(intersectables, scene);
+    free_scene<<<1, 1>>>(materials, intersectables, scene);
     checkCudaErrors(cudaGetLastError());
+    checkCudaErrors(cudaFree(materials));
     checkCudaErrors(cudaFree(intersectables));
     checkCudaErrors(cudaFree(scene));
     film.destroy();
