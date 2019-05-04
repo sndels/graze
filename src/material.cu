@@ -3,11 +3,14 @@
 #include <cfloat>
 
 namespace {
-    __device__ float schlick(float cosine, float refIdx)
+    // NoV is the angle between the direction the ray is coming from and the interface
+    // normal towards the source medium
+    // ni, nt are the incoming and outgoing indices of refraction, respectively
+    __device__ float schlickApprox(const float NoV, const float ni, const float nt)
     {
-        float r0 = (1.f - refIdx) / (1.f + refIdx);
+        float r0 = (ni - nt) / (ni + nt);
         r0 = r0 * r0;
-        return r0 + (1 - r0) * pow(1.f - cosine, 5.f);
+        return r0 + (1 - r0) * pow(1.f - NoV, 5.f);
     }
 }
 
@@ -52,32 +55,38 @@ __device__ Dielectric::Dielectric(const float refIdx) :
 
 __device__ bool Dielectric::scatter(const Ray& r, const Hit& hit, Vec3* attenuation, Ray* scattered, curandStatePhilox4_32_10_t* randState) const
 {
-    const Vec3 reflected = reflect(r.d, hit.n);
+    // Glass so no absorption, always scatter
     *attenuation = Vec3{1.f};
 
-    Vec3 outN;
-    float cosine;
-    float niPerNt;
-    if (dot(r.d, hit.n) > 0) {
-        outN = -hit.n;
-        niPerNt = _refIdx;
-        cosine = _refIdx * dot(r.d, hit.n);
+    Vec3 rn; // Surface normal towards source medium
+    float ni;
+    float nt;
+    if (dot(hit.n, -r.d) < 0.f) {
+        // From object
+        rn = -hit.n;
+        ni = _refIdx;
+        nt = 1.f; // Only dielectric/air -refraction is supported
     } else {
-        outN = hit.n;
-        niPerNt = 1.f / _refIdx;
-        cosine = -dot(r.d, hit.n);
+        // To object
+        rn = hit.n;
+        ni = 1.f; // Only air/dielectric-refraction is supported
+        nt = _refIdx;
     }
 
-    Vec3 refracted;
-    float pReflect;
-    if (refract(r.d, outN, niPerNt, &refracted))
-        pReflect = schlick(cosine, _refIdx);
-    else 
-        pReflect = 1.f;
+    const Vec3 reflected = reflect(r.d, rn);
 
+    // Get refraction and Fresnel factor
+    Vec3 refracted;
+    float r0;
+    if (refract(r.d, rn, ni, nt, &refracted))
+        r0 = schlickApprox(dot(rn, -r.d), ni, nt);
+    else 
+        r0 = 1.f;
+
+    // Distribute reflected and refracted rays according to Fresnel factor
     *scattered = Ray{
         hit.p,
-        curand_uniform(randState) < pReflect ? reflected : refracted,
+        curand_uniform(randState) < r0 ? reflected : refracted,
         0.001f,
         FLT_MAX
     };
