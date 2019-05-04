@@ -20,6 +20,19 @@ target_compile_features(graze
 set_target_properties(graze
     PROPERTIES CUDA_SEPARABLE_COMPILATION ON
 )
+if (CMAKE_BUILD_TYPE EQUAL "DEBUG")
+    target_compile_options(graze
+        PRIVATE
+        -g
+        -G
+        -line-info
+    )
+else()
+    target_compile_options(graze
+        PRIVATE
+        -line-info
+    )
+endif (CMAKE_BUILD_TYPE EQUAL "DEBUG")
 # TODO: pedantic
 target_include_directories(graze
     PRIVATE
