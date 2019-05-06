@@ -1,6 +1,7 @@
 #include "stdio.h"
 
 #include "cuda_helpers.hu"
+#include "device_vector.hu"
 #include "film.hu"
 #include "gui.hu"
 #include "material.hu"
@@ -10,96 +11,97 @@
 #include "window.hpp"
 
 namespace {
-    // This a loose upper bound
-    const uint32_t numSpheres = 500;
-
     // Init on gpu to use abstract base class
-    __global__ void init_scene(Material** materials, Intersectable** intersectables, Intersectable** scene)
+    __global__ void init_scene(DeviceVector<Material*>** materials, Intersectable** scene)
     {
-        materials[0] = new Lambertian{Vec3{0.5f, 0.5f, 0.5f}};
-        intersectables[0] = new Sphere{
-            Vec3{0.f, -1000.f, 0.f},
-            1000.f,
-            materials[0]
-        };
+        if ((blockIdx.x == 0) && (blockIdx.y == 0) && (blockIdx.z == 0) &&
+           (threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
+            *materials = new DeviceVector<Material*>;
+            IntersectableList* intersectables = new IntersectableList;
+            (*materials)->push_back(new Lambertian{Vec3{0.5f, 0.5f, 0.5f}});
+            intersectables->add(new Sphere{
+                Vec3{0.f, -1000.f, 0.f},
+                1000.f,
+                (*materials)->back()
+            });
 
-        int i = 1;
-        curandState randState;
-        curand_init(1337, 0, 0, &randState);
-        for (int a = -11; a < 11; ++a) {
-            for (int b = -11; b < 11; ++b) {
-                const Vec3 center0{
-                    a + 0.9f * curand_uniform(&randState),
-                    0.2f,
-                    b + 0.9f * curand_uniform(&randState)
-                };
-                Vec3 center1 = center0;
-                if (len(center0 - Vec3{4.f, 0.2f, 0.f}) > 0.9f) {
-                    const float chooseMat = curand_uniform(&randState);
-                    if (chooseMat < 0.8f) {
-                        center1 += Vec3{0.f, 0.5f * curand_uniform(&randState), 0.f};
-                        materials[i] = new Lambertian{
-                            Vec3{
-                                curand_uniform(&randState) * curand_uniform(&randState),
-                                curand_uniform(&randState) * curand_uniform(&randState),
-                                curand_uniform(&randState) * curand_uniform(&randState)
-                            }
-                        };
-                    } else if (chooseMat < 0.95f) {
-                        materials[i] = new Metal{
-                            0.5f * (1.f -
-                                    Vec3{
-                                        curand_uniform(&randState),
-                                        curand_uniform(&randState),
-                                        curand_uniform(&randState)
-                                    }),
-                            0.5f * curand_uniform(&randState)
-                        };
-                    } else
-                        materials[i] = new Dielectric{1.5f};
-
-                    intersectables[i] = new Sphere{
-                        center0,
-                        center1,
-                        0.f,
-                        1.f,
+            curandState randState;
+            curand_init(1337, 0, 0, &randState);
+            for (int a = -11; a < 11; ++a) {
+                for (int b = -11; b < 11; ++b) {
+                    const Vec3 center0{
+                        a + 0.9f * curand_uniform(&randState),
                         0.2f,
-                        materials[i]
+                        b + 0.9f * curand_uniform(&randState)
                     };
-                    ++i;
+                    Vec3 center1 = center0;
+                    if (len(center0 - Vec3{4.f, 0.2f, 0.f}) > 0.9f) {
+                        const float chooseMat = curand_uniform(&randState);
+                        if (chooseMat < 0.8f) {
+                            center1 += Vec3{0.f, 0.5f * curand_uniform(&randState), 0.f};
+                            (*materials)->push_back(new Lambertian{
+                                Vec3{
+                                    curand_uniform(&randState) * curand_uniform(&randState),
+                                    curand_uniform(&randState) * curand_uniform(&randState),
+                                    curand_uniform(&randState) * curand_uniform(&randState)
+                                }
+                            });
+                        } else if (chooseMat < 0.95f) {
+                            (*materials)->push_back(new Metal{
+                                0.5f * (1.f -
+                                        Vec3{
+                                            curand_uniform(&randState),
+                                            curand_uniform(&randState),
+                                            curand_uniform(&randState)
+                                        }),
+                                0.5f * curand_uniform(&randState)
+                            });
+                        } else
+                            (*materials)->push_back(new Dielectric{1.5f});
+
+                        intersectables->add(new Sphere{
+                            center0,
+                            center1,
+                            0.f,
+                            1.f,
+                            0.2f,
+                            (*materials)->back()
+                        });
+                    }
                 }
             }
+
+            (*materials)->push_back(new Dielectric{1.5f});
+            intersectables->add(new Sphere{
+                Vec3{0.f, 1.f, 0.f},
+                1.f,
+                (*materials)->back()
+            });
+            (*materials)->push_back(new Lambertian{Vec3{0.4f, 0.2f, 0.1f}});
+            intersectables->add(new Sphere{
+                Vec3{-4.f, 1.f, 0.f},
+                1.f,
+                (*materials)->back()
+            });
+            (*materials)->push_back(new Metal{Vec3{0.7f, 0.6f, 0.5f}, 0.f});
+            intersectables->add(new Sphere{
+                Vec3{4.f, 1.f, 0.f},
+                1.f,
+                (*materials)->back()
+            });
+
+            *scene = intersectables;
         }
-
-        materials[i] = new Dielectric{1.5f};
-        intersectables[i] = new Sphere{
-            Vec3{0.f, 1.f, 0.f},
-            1.f,
-            materials[i]
-        };
-        materials[++i] = new Lambertian{Vec3{0.4f, 0.2f, 0.1f}};
-        intersectables[i] = new Sphere{
-            Vec3{-4.f, 1.f, 0.f},
-            1.f,
-            materials[i]
-        };
-        materials[++i] = new Metal{Vec3{0.7f, 0.6f, 0.5f}, 0.f};
-        intersectables[i] = new Sphere{
-            Vec3{4.f, 1.f, 0.f},
-            1.f,
-            materials[i]
-        };
-
-        *scene = new IntersectableList(intersectables, ++i);
     }
 
-    __global__ void free_scene(Material** materials, Intersectable** intersectables, Intersectable** scene)
+    __global__ void free_scene(DeviceVector<Material*>** materials, Intersectable** scene)
     {
-        for (int i = 0; i < reinterpret_cast<IntersectableList*>(*scene)->numIntersectables; ++i) {
-            delete materials[i];
-            delete intersectables[i];
+        if ((blockIdx.x == 0) && (blockIdx.y == 0) && (blockIdx.z == 0) &&
+           (threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
+            for (int i = 0; i < (**materials).size(); ++i)
+                delete (**materials)[i];
+            delete *scene;
         }
-        delete *scene;
     }
 }
 
@@ -115,14 +117,12 @@ int main()
 
     timer.reset();
     printf("Building scene!\n");
-    Material** materials;
-    Intersectable** intersectables;
+    DeviceVector<Material*>** materials;
     Intersectable** scene;
-    checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&materials), (numSpheres + 1) * sizeof(Material*)));
-    checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&intersectables), (numSpheres + 1) * sizeof(Intersectable*)));
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&materials), sizeof(DeviceVector<Material*>*)));
     checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&scene), sizeof(Intersectable*)));
     // Scene needs to be initialized on GPU since it uses abstract classes
-    init_scene<<<1, 1>>>(materials, intersectables, scene);
+    init_scene<<<1, 1>>>(materials, scene);
     checkCudaErrors(cudaGetLastError());
     checkCudaErrors(cudaDeviceSynchronize());
     printf("Done in %.3fs!\n", timer.seconds());
@@ -152,10 +152,9 @@ int main()
 
     checkCudaErrors(cudaDeviceSynchronize());
     // Scene needs to be freed up on GPU as it was initialized there
-    free_scene<<<1, 1>>>(materials, intersectables, scene);
+    free_scene<<<1, 1>>>(materials, scene);
     checkCudaErrors(cudaGetLastError());
     checkCudaErrors(cudaFree(materials));
-    checkCudaErrors(cudaFree(intersectables));
     checkCudaErrors(cudaFree(scene));
 
     film.destroy();

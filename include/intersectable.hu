@@ -1,6 +1,7 @@
 #ifndef GRAZE_HITABLE_HU
 #define GRAZE_HITABLE_HU
 
+#include "device_vector.hu"
 #include "ray.hu"
 
 class Material;
@@ -20,12 +21,15 @@ public:
 
 class IntersectableList : public Intersectable {
 public:
-    __device__ IntersectableList(Intersectable** intersectables, const int numIntersectables);
+    __device__ IntersectableList() {}
+    __device__ ~IntersectableList();
+
+    __device__ void add(Intersectable* i);
 
     __device__ virtual bool intersect(Ray* r, Hit* hit) const;
 
-    Intersectable** intersectables;
-    int numIntersectables;
+private:
+    DeviceVector<Intersectable*> _intersectables;
 };
 
 #endif // GRAZE_HITABLE_HU

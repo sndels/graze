@@ -1,0 +1,114 @@
+#ifndef GRAZE_DEVICE_VECTOR_HU
+#define GRAZE_DEVICE_VECTOR_HU
+
+template<typename T>
+class DeviceVector {
+public:
+    __device__ DeviceVector();
+    __device__ ~DeviceVector();
+
+    // Copying these should never happen
+    __device__ DeviceVector(const DeviceVector<T>& other) = delete;
+    __device__ DeviceVector(DeviceVector<T>&& other);
+    __device__ const DeviceVector& operator=(const DeviceVector<T>& other) = delete;
+
+    // Implement only the interface needed
+    __device__ int size() const;
+    __device__ bool empty() const;
+
+    __device__ const T& operator[](int i) const;
+    __device__ T& operator[](int i);
+    __device__ const T& back() const;
+    __device__ T& back();
+
+    __device__ void push_back(T elem);
+    __device__ void pop_back();
+
+    __device__ void print() const;
+
+private:
+    T* _elems;
+    int _size;
+    int _capacity;
+};
+
+template<typename T>
+__device__ DeviceVector<T>::DeviceVector() :
+    _elems{new T[1]},
+    _size{0},
+    _capacity{1}
+{ }
+
+template<typename T>
+__device__ DeviceVector<T>::~DeviceVector()
+{
+    delete[] _elems;
+}
+
+template<typename T>
+__device__ DeviceVector<T>::DeviceVector(DeviceVector<T>&& other) :
+    _elems{other._elems},
+    _size{other._size},
+    _capacity{other._capacity}
+{
+    other._elems = nullptr;
+    other._size = 0;
+    other._capacity = 0;
+}
+
+template<typename T>
+__device__ const T& DeviceVector<T>::operator[](int i) const
+{
+    return _elems[i];
+}
+
+template<typename T>
+__device__ T& DeviceVector<T>::operator[](int i)
+{
+    return _elems[i];
+}
+
+template<typename T>
+__device__ const T& DeviceVector<T>::back() const
+{
+    return _elems[_size - 1];
+}
+
+template<typename T>
+__device__ T& DeviceVector<T>::back()
+{
+    return _elems[_size - 1];
+}
+
+template<typename T>
+__device__ int DeviceVector<T>::size() const
+{
+    return _size;
+}
+
+template<typename T>
+__device__ bool DeviceVector<T>::empty() const
+{
+    return _size == 0;
+}
+
+template<typename T>
+__device__ void DeviceVector<T>::push_back(T elem)
+{
+    if (_size == _capacity) {
+        _capacity *= 2;
+        T* newElems = new T[_capacity];
+        memcpy(newElems, _elems, _size * sizeof(T));
+        delete[] _elems;
+        _elems = newElems;
+    }
+    _elems[_size++] = elem;
+}
+
+template<typename T>
+__device__ void DeviceVector<T>::pop_back()
+{
+    _size--;
+}
+
+#endif // GRAZE_DEVICE_VECTOR_HU
