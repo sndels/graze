@@ -13,7 +13,7 @@ namespace {
         Hit hit;
         Vec3 atten{1.f};
         Ray r = startRay;
-        for (int bounce = 0; bounce < 50; ++bounce) {
+        for (int bounce = 0; bounce < 10; ++bounce) {
             if ((*scene)->intersect(&r, &hit)) {
                 Ray scattered;
                 Vec3 attenuation;
@@ -65,13 +65,8 @@ void render(const CameraSettings& cameraSettings, Film* film, const Intersectabl
 {
     const auto& surface = film->surface();
     const Camera cam{
-        cameraSettings.eye,
-        cameraSettings.target,
-        Vec3{0.f, 1.f, 0.f},
-        cameraSettings.fov,
-        float(surface.width) / surface.height,
-        cameraSettings.aperture,
-        cameraSettings.focalLength
+        cameraSettings,
+        float(surface.width) / surface.height
     };
 
     const dim3 threads{8, 8};

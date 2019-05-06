@@ -6,7 +6,7 @@
 
 namespace {
     const ImVec2 windowPos{10.f, 10.f};
-    const ImVec2 windowSize{300.f, 265.f};
+    const ImVec2 windowSize{300.f, 289.f};
     const float floatInputWidth = 50.f;
     const float float2InputWidth = 121.f;
     const float float3InputWidth = 221.f;
@@ -74,6 +74,10 @@ void GUI::startFrame()
         ImGui::DragFloat("focalLength", &_cameraSettings.focalLength, 0.1f, 0.f, FLT_MAX, "%.1f");
         ImGui::DragFloat("aperture", &_cameraSettings.aperture, 0.1f, 0.f, 100.f, "%.1f");
         ImGui::DragFloat("fov", &_cameraSettings.fov, 0.1f, 0.1f, 179.9f, "%.1f");
+        ImGui::PopItemWidth();
+        ImGui::PushItemWidth(float2InputWidth);
+        // CameraSettings time0 and time1 are back-to-back
+        ImGui::DragFloat2("time", &_cameraSettings.time0, 0.1f, 0.f, 10.f, "%.1f");
         ImGui::PopItemWidth();
     }
 

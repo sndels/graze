@@ -251,4 +251,13 @@ __device__ inline Vec3 randomDir(curandStatePhilox4_32_10_t* randState)
     return v;
 }
 
+// https://devblogs.nvidia.com/lerp-faster-cuda/
+__device__ inline Vec3 lerp(const Vec3& v0, const Vec3& v1, float t) {
+    return Vec3{
+        fma(t, v1.x, fma(-t, v0.x, v0.x)),
+        fma(t, v1.y, fma(-t, v0.y, v0.y)),
+        fma(t, v1.z, fma(-t, v0.z, v0.z))
+    };
+}
+
 #endif // GRAZE_VEC_HU

@@ -5,15 +5,18 @@
 
 class Material;
 
+// No special class for stationary sphere as this ended up being faster even with the lerp
 class Sphere : public Intersectable {
 public:
     // Caller is responsible of material
     __device__ Sphere(const Vec3& center, const float radius, Material* material);
+    __device__ Sphere(const Vec3& center0, const Vec3& center1, const float time0, const float time1, const float radius, Material* material);
 
     __device__ virtual bool intersect(Ray* r, Hit* hit) const;
 
 private:
-    Vec3 _center;
+    Vec3 _center0, _center1;
+    float _time0, _time1;
     float _radius;
     Material* _material;
 };

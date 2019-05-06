@@ -23,6 +23,7 @@ __device__ bool Lambertian::scatter(const Ray& r, const Hit& hit, Vec3* attenuat
     *scattered = Ray{
         hit.p,
         normalize(hit.n + randomDir(randState)),
+        r.time,
         0.001f,
         FLT_MAX
     };
@@ -41,6 +42,7 @@ __device__ bool Metal::scatter(const Ray& r, const Hit& hit, Vec3* attenuation, 
     *scattered = Ray{
         hit.p,
         normalize(reflect(r.d, hit.n) + _roughness * randomDir(randState)),
+        r.time,
         0.001f,
         FLT_MAX
     };
@@ -80,13 +82,14 @@ __device__ bool Dielectric::scatter(const Ray& r, const Hit& hit, Vec3* attenuat
     float r0;
     if (refract(r.d, rn, ni, nt, &refracted))
         r0 = schlickApprox(dot(rn, -r.d), ni, nt);
-    else 
+    else
         r0 = 1.f;
 
     // Distribute reflected and refracted rays according to Fresnel factor
     *scattered = Ray{
         hit.p,
         curand_uniform(randState) < r0 ? reflected : refracted,
+        r.time,
         0.001f,
         FLT_MAX
     };

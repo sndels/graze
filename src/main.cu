@@ -28,14 +28,16 @@ namespace {
         curand_init(1337, 0, 0, &randState);
         for (int a = -11; a < 11; ++a) {
             for (int b = -11; b < 11; ++b) {
-                const Vec3 center{
+                const Vec3 center0{
                     a + 0.9f * curand_uniform(&randState),
                     0.2f,
                     b + 0.9f * curand_uniform(&randState)
                 };
-                if (len(center - Vec3{4.f, 0.2f, 0.f}) > 0.9f) {
+                Vec3 center1 = center0;
+                if (len(center0 - Vec3{4.f, 0.2f, 0.f}) > 0.9f) {
                     const float chooseMat = curand_uniform(&randState);
                     if (chooseMat < 0.8f) {
+                        center1 += Vec3{0.f, 0.5f * curand_uniform(&randState), 0.f};
                         materials[i] = new Lambertian{
                             Vec3{
                                 curand_uniform(&randState) * curand_uniform(&randState),
@@ -57,7 +59,10 @@ namespace {
                         materials[i] = new Dielectric{1.5f};
 
                     intersectables[i] = new Sphere{
-                        center,
+                        center0,
+                        center1,
+                        0.f,
+                        1.f,
                         0.2f,
                         materials[i]
                     };

@@ -10,7 +10,7 @@ struct FilmSettings
     // Dimensions need to be back-to-back as they are written to as uint32_t[2]
     uint32_t width = 1280;
     uint32_t height = 720;
-    uint32_t samples = 100;
+    uint32_t samples = 10;
 };
 
 struct CameraSettings
@@ -20,6 +20,9 @@ struct CameraSettings
     float fov = 20.f;
     float aperture = 0.2f;
     float focalLength = len(Vec3{13.f, 2.f, 3.f} - Vec3{0.f});
+    // Times need to be back-to-back as they are written to as float[2]
+    float time0 = 0.f;
+    float time1 = 1.f;
 };
 
 class GUI

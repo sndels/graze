@@ -1,14 +1,27 @@
 #include "sphere.hu"
 
 __device__ Sphere::Sphere(const Vec3& center, const float radius, Material* material) :
-    _center{center},
+    _center0{center},
+    _center1{center},
+    _time0{0.f},
+    _time1{1.f},
+    _radius{radius},
+    _material{material}
+{ }
+
+__device__ Sphere::Sphere(const Vec3& center0, const Vec3& center1, const float time0, const float time1, const float radius, Material* material) :
+    _center0{center0},
+    _center1{center1},
+    _time0{time0},
+    _time1{time1},
     _radius{radius},
     _material{material}
 { }
 
 __device__ bool Sphere::intersect(Ray* r, Hit* hit) const
 {
-    const Vec3 oc = r->o - _center;
+    const Vec3 center = lerp(_center0, _center1, (r->time - _time0) / (_time1 - _time0));
+    const Vec3 oc = r->o - center;
     const float a = lenSq(r->d);
     const float b = 2.f * dot(oc, r->d);
     const float c = lenSq(oc) - _radius * _radius;
@@ -39,7 +52,7 @@ __device__ bool Sphere::intersect(Ray* r, Hit* hit) const
         r->tMax = t;
         hit->t = t;
         hit->p = r->point(t);
-        hit->n = (hit->p - _center) / _radius;
+        hit->n = (hit->p - center) / _radius;
         hit->material = _material;
         return true;
     }

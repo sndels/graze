@@ -1,11 +1,12 @@
 #ifndef GRAZE_CAMERA_HU
 #define GRAZE_CAMERA_HU
 
+#include "gui.hu"
 #include "ray.hu"
 
 class Camera {
 public:
-    Camera(const Vec3& eye, const Vec3& target, const Vec3& up, const float fov, const float ar, const float aperture, const float focusDist);
+    Camera(const CameraSettings& settings, const float ar);
 
     __device__ Ray ray(const float s, const float t, curandStatePhilox4_32_10_t* randState) const;
 
@@ -15,6 +16,7 @@ private:
     Vec3 _horizontal;
     Vec3 _vertical;
     Vec3 _u, _v, _w;
+    float _time0, _time1;
     float _lensRadius;
 };
 
