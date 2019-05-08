@@ -69,7 +69,7 @@ void render(const CameraSettings& cameraSettings, Film* film, const Intersectabl
         float(surface.width) / surface.height
     };
 
-    const dim3 threads{8, 8};
+    const dim3 threads{16, 16};
     const dim3 blocks{
         surface.width / threads.x + 1,
         surface.height / threads.y + 1
