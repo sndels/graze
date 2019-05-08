@@ -118,7 +118,7 @@ int main()
     Timer timer;
 
     timer.reset();
-    printf("Building scene!\n");
+    printf("Building scene..."); fflush(stdout);
     DeviceVector<Material*>** materials;
     Intersectable** scene;
     checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&materials), sizeof(DeviceVector<Material*>*)));
@@ -127,7 +127,7 @@ int main()
     init_scene<<<1, 1>>>(materials, scene);
     checkCudaErrors(cudaGetLastError());
     checkCudaErrors(cudaDeviceSynchronize());
-    printf("Done in %.3fs!\n", timer.seconds());
+    printf(" took %.3fs!\n", timer.seconds());
 
 
     // Run the main loop
@@ -141,10 +141,10 @@ int main()
         if (window.shouldRender() || gui.shouldRender()) {
             film.updateSettings(gui.filmSettings());
 
-            printf("Initiating render!\n");
+            printf("Initiating render..."); fflush(stdout);
             timer.reset();
             render(gui.cameraSettings(), &film, scene);
-            printf("Done in %.3fs!\n", timer.seconds());
+            printf(" took %.3fs!\n", timer.seconds());
         }
 
         film.display(window.width(), window.height());
