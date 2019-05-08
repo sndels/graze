@@ -1,0 +1,34 @@
+#ifndef GRAZE_BVH_HU
+#define GRAZE_BVH_HU
+
+#include <cfloat>
+
+#include "aabb.hu"
+#include "intersectable.hu"
+
+struct BVHNode {
+    AABB aabb;
+    BVHNode* left;
+    BVHNode* right;
+    Intersectable** start;
+    Intersectable** end;
+
+    __device__ BVHNode(Intersectable** start, Intersectable** end);
+    __device__ virtual bool intersect(Ray* r, Hit* hit) const;
+};
+
+class BVH : public Intersectable {
+public:
+    __device__ BVH(DeviceVector<Intersectable*>&& intersectables, const float t0, const float t1);
+    __device__ ~BVH();
+
+    __device__ virtual bool intersect(Ray* r, Hit* hit) const;
+    // Times not honored as bbs are constructed
+    __device__ virtual AABB aabb(const float, const float) const;
+
+private:
+    DeviceVector<Intersectable*> _intersectables;
+    BVHNode* _root;
+};
+
+#endif // GRAZE_BVH_HU

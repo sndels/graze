@@ -1,5 +1,7 @@
-#include "stdio.h"
+#include <cstdio>
+#include <utility>
 
+#include "bvh.hu"
 #include "cuda_helpers.hu"
 #include "device_vector.hu"
 #include "film.hu"
@@ -17,9 +19,9 @@ namespace {
         if ((blockIdx.x == 0) && (blockIdx.y == 0) && (blockIdx.z == 0) &&
            (threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             *materials = new DeviceVector<Material*>;
-            IntersectableList* intersectables = new IntersectableList;
+            DeviceVector<Intersectable*> intersectables;
             (*materials)->push_back(new Lambertian{Vec3{0.5f, 0.5f, 0.5f}});
-            intersectables->add(new Sphere{
+            intersectables.push_back(new Sphere{
                 Vec3{0.f, -1000.f, 0.f},
                 1000.f,
                 (*materials)->back()
@@ -59,7 +61,7 @@ namespace {
                         } else
                             (*materials)->push_back(new Dielectric{1.5f});
 
-                        intersectables->add(new Sphere{
+                        intersectables.push_back(new Sphere{
                             center0,
                             center1,
                             0.f,
@@ -72,25 +74,25 @@ namespace {
             }
 
             (*materials)->push_back(new Dielectric{1.5f});
-            intersectables->add(new Sphere{
+            intersectables.push_back(new Sphere{
                 Vec3{0.f, 1.f, 0.f},
                 1.f,
                 (*materials)->back()
             });
             (*materials)->push_back(new Lambertian{Vec3{0.4f, 0.2f, 0.1f}});
-            intersectables->add(new Sphere{
+            intersectables.push_back(new Sphere{
                 Vec3{-4.f, 1.f, 0.f},
                 1.f,
                 (*materials)->back()
             });
             (*materials)->push_back(new Metal{Vec3{0.7f, 0.6f, 0.5f}, 0.f});
-            intersectables->add(new Sphere{
+            intersectables.push_back(new Sphere{
                 Vec3{4.f, 1.f, 0.f},
                 1.f,
                 (*materials)->back()
             });
 
-            *scene = intersectables;
+            *scene = new BVH(std::move(intersectables), 0.f, 1.f);
         }
     }
 

@@ -1,4 +1,5 @@
 set(GRAZE_SOURCES
+    ${CMAKE_CURRENT_LIST_DIR}/bvh.cu
     ${CMAKE_CURRENT_LIST_DIR}/camera.cu
     ${CMAKE_CURRENT_LIST_DIR}/cuda_helpers.cu
     ${CMAKE_CURRENT_LIST_DIR}/film.cu

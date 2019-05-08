@@ -3,6 +3,7 @@
 
 #include "device_vector.hu"
 #include "ray.hu"
+#include "aabb.hu"
 
 class Material;
 
@@ -16,6 +17,7 @@ struct Hit {
 class Intersectable {
 public:
     __device__ virtual bool intersect(Ray* r, Hit* hit) const = 0;
+    __device__ virtual AABB aabb(const float t0, const float t1) const = 0;
 };
 
 
@@ -27,6 +29,7 @@ public:
     __device__ void add(Intersectable* i);
 
     __device__ virtual bool intersect(Ray* r, Hit* hit) const;
+    __device__ virtual AABB aabb(const float t0, const float t1) const;
 
 private:
     DeviceVector<Intersectable*> _intersectables;

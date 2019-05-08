@@ -1,0 +1,36 @@
+#ifndef GRAZE_AABB_HU
+#define GRAZE_AABB_HU
+
+#include "ray.hu"
+
+struct AABB {
+    Vec3 v0;
+    Vec3 v1;
+    Vec3 center;
+
+    __device__ AABB(const Vec3& min, const Vec3& max) :
+        v0{min},
+        v1{max},
+        center{(max - min) / 2.f}
+    { }
+
+    __device__ bool intersect(Ray* r) const
+    {
+        const Vec3 invD = 1.f / r->d;
+        const Vec3 t0 = (v0 - r->o) * invD;
+        const Vec3 t1 = (v1 - r->o) * invD;
+
+        const Vec3 tMin = min(t0, t1);
+        const Vec3 tMax = max(t0, t1);
+
+        return max(max(tMin), r->tMin) <= min(min(tMax), r->tMax);
+    }
+
+    __device__ void merge(const AABB& bb)
+    {
+        v0 = min(v0, bb.v0);
+        v1 = max(v1, bb.v1);
+    }
+};
+
+#endif // GRAZE_AABB_HU

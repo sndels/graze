@@ -1,5 +1,7 @@
 #include "intersectable.hu"
 
+#include <cfloat>
+
 __device__ IntersectableList::~IntersectableList()
 {
     for (int i = 0; i < _intersectables.size(); ++i)
@@ -18,4 +20,12 @@ __device__ bool IntersectableList::intersect(Ray* r, Hit* hit) const
         hitSomething |= _intersectables[i]->intersect(r, hit);
 
     return hitSomething;
+}
+
+__device__ AABB IntersectableList::aabb(const float t0, const float t1) const
+{
+    AABB aabb{Vec3{FLT_MAX}, Vec3{-FLT_MAX}};
+    for (int i = 0; i < _intersectables.size(); ++i)
+        aabb.merge(_intersectables[i]->aabb(t0, t1));
+    return aabb;
 }

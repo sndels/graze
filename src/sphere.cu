@@ -20,8 +20,8 @@ __device__ Sphere::Sphere(const Vec3& center0, const Vec3& center1, const float 
 
 __device__ bool Sphere::intersect(Ray* r, Hit* hit) const
 {
-    const Vec3 center = lerp(_center0, _center1, (r->time - _time0) / (_time1 - _time0));
-    const Vec3 oc = r->o - center;
+    const Vec3 ce = center(r->time);
+    const Vec3 oc = r->o - ce;
     const float a = lenSq(r->d);
     const float b = 2.f * dot(oc, r->d);
     const float c = lenSq(oc) - _radius * _radius;
@@ -52,9 +52,24 @@ __device__ bool Sphere::intersect(Ray* r, Hit* hit) const
         r->tMax = t;
         hit->t = t;
         hit->p = r->point(t);
-        hit->n = (hit->p - center) / _radius;
+        hit->n = (hit->p - ce) / _radius;
         hit->material = _material;
         return true;
     }
     return false;
+}
+
+__device__ AABB Sphere::aabb(const float t0, const float t1) const
+{
+    Vec3 center0 = center(t0);
+    Vec3 center1 = center(t1);
+    return AABB{
+        min(center0, center1) - Vec3{_radius},
+        max(center0, center1) + Vec3{_radius}
+    };
+}
+
+__device__ Vec3 Sphere::center(const float t) const
+{
+    return lerp(_center0, _center1, (t - _time0) / (_time1 - _time0));
 }
