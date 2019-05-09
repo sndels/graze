@@ -7,6 +7,7 @@
 #include "film.hu"
 #include "gui.hu"
 #include "material.hu"
+#include "perlin.hu"
 #include "renderer.hu"
 #include "sphere.hu"
 #include "timer.hpp"
@@ -18,6 +19,7 @@ namespace {
     {
         if ((blockIdx.x == 0) && (blockIdx.y == 0) && (blockIdx.z == 0) &&
            (threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
+            Perlin::init();
             *materials = new DeviceVector<Material*>;
             DeviceVector<Intersectable*> intersectables;
             (*materials)->push_back(new Lambertian{
@@ -85,9 +87,7 @@ namespace {
                 1.f,
                 (*materials)->back()
             });
-            (*materials)->push_back(new Lambertian{
-                new ConstantTexture{Vec3{0.4f, 0.2f, 0.1f}}
-            });
+            (*materials)->push_back(new Lambertian{new NoiseTexture{1.5f}});
             intersectables.push_back(new Sphere{
                 Vec3{-4.f, 1.f, 0.f},
                 1.f,
@@ -111,6 +111,7 @@ namespace {
             for (int i = 0; i < (**materials).size(); ++i)
                 delete (**materials)[i];
             delete *scene;
+            Perlin::destroy();
         }
     }
 }

@@ -4,10 +4,10 @@
 #include <curand_kernel.h>
 
 struct Vec3 {
-    // Alias both xyz and rgb components
-    union { float x, r; };
-    union { float y, g; };
-    union { float z, b; };
+    // Alias xyz, rgb and uvw accessors
+    union { float x, r, u;};
+    union { float y, g, v;};
+    union { float z, b, w;};
 
     __host__ __device__ Vec3()
     {

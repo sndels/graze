@@ -12,6 +12,7 @@ set(GRAZE_INCLUDES
     ${CMAKE_CURRENT_LIST_DIR}/film.hu
     ${CMAKE_CURRENT_LIST_DIR}/gui.hu
     ${CMAKE_CURRENT_LIST_DIR}/intersectable.hu
+    ${CMAKE_CURRENT_LIST_DIR}/perlin.hu
     ${CMAKE_CURRENT_LIST_DIR}/ray.hu
     ${CMAKE_CURRENT_LIST_DIR}/renderer.hu
     ${CMAKE_CURRENT_LIST_DIR}/sphere.hu

@@ -1,0 +1,16 @@
+#ifndef GRAZE_PERLIN_HU
+#define GRAZE_PERLIN_HU
+
+#include "vec.hu"
+
+// The usual c++ singleton interface is not supported on gpu as the initial values
+// of statics need to be known compile-time
+namespace Perlin {
+    __device__ void init();
+    __device__ void destroy();
+
+    __device__ float noise(const Vec3& p);
+    __device__ float turbulence(const Vec3& p, const int depth);
+};
+
+#endif // GRAZE_PERLIN_HU

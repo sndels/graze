@@ -31,4 +31,13 @@ private:
     Texture* _even;
 };
 
+class NoiseTexture : public Texture {
+public:
+    __device__ NoiseTexture(const float scale);
+    __device__ virtual Vec3 value(const float u, const float v, const Vec3& p) const;
+
+private:
+    float _scale;
+};
+
 #endif // GRAZE_TEXTURE_HU

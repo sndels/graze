@@ -7,6 +7,7 @@ set(GRAZE_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/intersectable.cu
     ${CMAKE_CURRENT_LIST_DIR}/main.cu
     ${CMAKE_CURRENT_LIST_DIR}/material.cu
+    ${CMAKE_CURRENT_LIST_DIR}/perlin.cu
     ${CMAKE_CURRENT_LIST_DIR}/renderer.cu
     ${CMAKE_CURRENT_LIST_DIR}/sphere.cu
     ${CMAKE_CURRENT_LIST_DIR}/texture.cu
