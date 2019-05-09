@@ -14,9 +14,14 @@ namespace {
     }
 }
 
-__device__ Lambertian::Lambertian(const Vec3& albedo) :
+__device__ Lambertian::Lambertian(Texture* albedo) :
     _albedo(albedo)
 { }
+
+__device__ Lambertian::~Lambertian()
+{
+    delete _albedo;
+}
 
 __device__ bool Lambertian::scatter(const Ray& r, const Hit& hit, Vec3* attenuation, Ray* scattered, curandStatePhilox4_32_10_t* randState) const
 {
@@ -27,7 +32,7 @@ __device__ bool Lambertian::scatter(const Ray& r, const Hit& hit, Vec3* attenuat
         0.001f,
         FLT_MAX
     };
-    *attenuation = _albedo;
+    *attenuation = _albedo->value(0, 0, hit.p);
     return true;
 }
 

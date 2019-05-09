@@ -1,0 +1,34 @@
+#ifndef GRAZE_TEXTURE_HU
+#define GRAZE_TEXTURE_HU
+
+#include "vec.hu"
+
+class Texture {
+public:
+    __device__ virtual Vec3 value(const float u, const float v, const Vec3& p) const = 0;
+};
+
+class ConstantTexture : public Texture {
+public:
+    __device__ ConstantTexture(const Vec3& color);
+
+    __device__ virtual Vec3 value(const float u, const float v, const Vec3& p) const;
+
+private:
+    Vec3 _color;
+};
+
+
+class CheckerTexture : public Texture {
+public:
+    __device__ CheckerTexture(Texture* odd, Texture* even);
+    __device__ ~CheckerTexture();
+
+    __device__ virtual Vec3 value(const float u, const float v, const Vec3& p) const;
+
+private:
+    Texture* _odd;
+    Texture* _even;
+};
+
+#endif // GRAZE_TEXTURE_HU

@@ -3,6 +3,7 @@
 
 #include "intersectable.hu"
 #include "ray.hu"
+#include "texture.hu"
 
 class Material {
 public:
@@ -11,12 +12,13 @@ public:
 
 class Lambertian : public Material {
 public:
-    __device__ Lambertian(const Vec3& albedo);
+    __device__ Lambertian(Texture* albedo);
+    __device__ ~Lambertian();
 
     __device__ virtual bool scatter(const Ray& r, const Hit& hit, Vec3* attenuation, Ray* scattered, curandStatePhilox4_32_10_t* randState) const;
 
 private:
-    Vec3 _albedo;
+    Texture* _albedo;
 };
 
 class Metal : public Material {

@@ -20,7 +20,12 @@ namespace {
            (threadIdx.x == 0) && (threadIdx.y == 0) && (threadIdx.z == 0)) {
             *materials = new DeviceVector<Material*>;
             DeviceVector<Intersectable*> intersectables;
-            (*materials)->push_back(new Lambertian{Vec3{0.5f, 0.5f, 0.5f}});
+            (*materials)->push_back(new Lambertian{
+                new CheckerTexture{
+                    new ConstantTexture{Vec3{0.2f, 0.3f, 0.1f}},
+                    new ConstantTexture{Vec3{0.9f, 0.9f, 0.9f}}
+                }
+            });
             intersectables.push_back(new Sphere{
                 Vec3{0.f, -1000.f, 0.f},
                 1000.f,
@@ -42,12 +47,13 @@ namespace {
                         if (chooseMat < 0.8f) {
                             center1 += Vec3{0.f, 0.5f * curand_uniform(&randState), 0.f};
                             (*materials)->push_back(new Lambertian{
-                                Vec3{
-                                    curand_uniform(&randState) * curand_uniform(&randState),
-                                    curand_uniform(&randState) * curand_uniform(&randState),
-                                    curand_uniform(&randState) * curand_uniform(&randState)
-                                }
-                            });
+                                new ConstantTexture{
+                                    Vec3{
+                                        curand_uniform(&randState) * curand_uniform(&randState),
+                                        curand_uniform(&randState) * curand_uniform(&randState),
+                                        curand_uniform(&randState) * curand_uniform(&randState)
+                                    }
+                            }});
                         } else if (chooseMat < 0.95f) {
                             (*materials)->push_back(new Metal{
                                 0.5f * (1.f -
@@ -79,7 +85,9 @@ namespace {
                 1.f,
                 (*materials)->back()
             });
-            (*materials)->push_back(new Lambertian{Vec3{0.4f, 0.2f, 0.1f}});
+            (*materials)->push_back(new Lambertian{
+                new ConstantTexture{Vec3{0.4f, 0.2f, 0.1f}}
+            });
             intersectables.push_back(new Sphere{
                 Vec3{-4.f, 1.f, 0.f},
                 1.f,

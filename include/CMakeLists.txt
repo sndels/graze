@@ -15,6 +15,7 @@ set(GRAZE_INCLUDES
     ${CMAKE_CURRENT_LIST_DIR}/ray.hu
     ${CMAKE_CURRENT_LIST_DIR}/renderer.hu
     ${CMAKE_CURRENT_LIST_DIR}/sphere.hu
+    ${CMAKE_CURRENT_LIST_DIR}/texture.hu
     ${CMAKE_CURRENT_LIST_DIR}/timer.hpp
     ${CMAKE_CURRENT_LIST_DIR}/vec.hu
     ${CMAKE_CURRENT_LIST_DIR}/window.hpp

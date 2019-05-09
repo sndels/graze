@@ -9,6 +9,7 @@ set(GRAZE_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/material.cu
     ${CMAKE_CURRENT_LIST_DIR}/renderer.cu
     ${CMAKE_CURRENT_LIST_DIR}/sphere.cu
+    ${CMAKE_CURRENT_LIST_DIR}/texture.cu
     ${CMAKE_CURRENT_LIST_DIR}/timer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/window.cpp
     PARENT_SCOPE
