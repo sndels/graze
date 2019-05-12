@@ -100,3 +100,22 @@ __device__ bool Dielectric::scatter(const Ray& r, const Hit& hit, Vec3* attenuat
     };
     return true;
 }
+
+__device__ DiffuseLight::DiffuseLight(Texture* emission) :
+    _emission{emission}
+{ }
+
+__device__ DiffuseLight::~DiffuseLight()
+{
+    delete _emission;
+}
+
+__device__ bool DiffuseLight::scatter(const Ray& r, const Hit& hit, Vec3* attenuation, Ray* scattered, curandStatePhilox4_32_10_t* randState) const
+{
+    return false;
+}
+
+__device__ Vec3 DiffuseLight::emit(const float u, const float v, const Vec3& p) const
+{
+    return _emission->value(u, v, p);
+}

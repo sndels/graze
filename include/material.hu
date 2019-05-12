@@ -16,6 +16,10 @@ public:
     __device__ ~Lambertian();
 
     __device__ virtual bool scatter(const Ray& r, const Hit& hit, Vec3* attenuation, Ray* scattered, curandStatePhilox4_32_10_t* randState) const;
+    __device__ virtual Vec3 emit(const float u, const float v, const Vec3& p) const
+    {
+        return Vec3{0.f};
+    }
 
 private:
     Texture* _albedo;
@@ -40,6 +44,18 @@ public:
 
 private:
     float _refIdx;
+};
+
+class DiffuseLight : public Material {
+public:
+    __device__ DiffuseLight(Texture* emission);
+    __device__ ~DiffuseLight();
+
+    __device__ virtual bool scatter(const Ray& r, const Hit& hit, Vec3* attenuation, Ray* scattered, curandStatePhilox4_32_10_t* randState) const;
+    __device__ virtual Vec3 emit(const float u, const float v, const Vec3& p) const;
+
+private:
+    Texture* _emission;
 };
 
 #endif // GRAZE_MATERIAL_HU
